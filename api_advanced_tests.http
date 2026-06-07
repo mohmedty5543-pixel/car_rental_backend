@@ -1,0 +1,569 @@
+### =====================================================
+### ADVANCED API TEST SUITE
+### =====================================================
+
+@baseUrl = http://127.0.0.1:8000/api
+@json = application/json
+@ownerEmail = new_owner_2026@test.com
+@ownerPassword = NewPass12345*
+@secondOwnerEmail = new_vendorb_2026@test.com
+@secondOwnerPassword = NewPass12345*
+@customerEmail = new_customer_2026@test.com
+@customerPassword = NewPass12345*
+@adminEmail = new_admin_2026@test.com
+@adminPassword = NewPass12345*
+
+### =====================================================
+### 0. HEALTH CHECK
+### =====================================================
+
+###
+GET {{baseUrl}}/
+
+
+### =====================================================
+### 1. REGISTER USERS
+### =====================================================
+
+###
+# @name ownerUser
+POST {{baseUrl}}/auth/register/
+Content-Type: {{json}}
+
+{
+  "username": "new_owner_user_2026",
+  "email": "{{ownerEmail}}",
+  "password": "{{ownerPassword}}",
+  "role": "VENDOR_STAFF"
+}
+
+
+###
+# @name secondOwnerUser
+POST {{baseUrl}}/auth/register/
+Content-Type: {{json}}
+
+{
+  "username": "new_vendor_b_owner_2026",
+  "email": "{{secondOwnerEmail}}",
+  "password": "{{secondOwnerPassword}}",
+  "role": "VENDOR_STAFF"
+}
+
+
+###
+# @name customerUser
+POST {{baseUrl}}/auth/register/
+Content-Type: {{json}}
+
+{
+  "username": "new_customer_user_2026",
+  "email": "{{customerEmail}}",
+  "password": "{{customerPassword}}",
+  "role": "CUSTOMER"
+}
+
+
+###
+# @name adminUser
+POST {{baseUrl}}/auth/register/
+Content-Type: {{json}}
+
+{
+  "username": "new_admin_user_2026",
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "ADMIN"
+}
+
+
+### =====================================================
+### 2. LOGIN USERS
+### =====================================================
+
+###
+# @name loginOwner
+POST {{baseUrl}}/auth/login/
+Content-Type: {{json}}
+
+{
+  "email": "{{ownerEmail}}",
+  "password": "{{ownerPassword}}"
+}
+
+
+###
+# @name loginSecondOwner
+POST {{baseUrl}}/auth/login/
+Content-Type: {{json}}
+
+{
+  "email": "{{secondOwnerEmail}}",
+  "password": "{{secondOwnerPassword}}"
+}
+
+
+###
+# @name loginCustomer
+POST {{baseUrl}}/auth/login/
+Content-Type: {{json}}
+
+{
+  "email": "{{customerEmail}}",
+  "password": "{{customerPassword}}"
+}
+
+
+###
+# @name loginAdmin
+POST {{baseUrl}}/auth/login/
+Content-Type: {{json}}
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+
+### =====================================================
+### 3. CREATE VENDORS
+### =====================================================
+
+###
+# @name vendorA
+POST {{baseUrl}}/vendors/
+Authorization: Bearer {{loginOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "name": "Gamma Prestige Cars",
+  "type": "COMPANY",
+  "description": "Luxury fleet for high-end rentals"
+}
+
+
+###
+# @name vendorB
+POST {{baseUrl}}/vendors/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "name": "Delta Rental Hub",
+  "type": "COMPANY",
+  "description": "Reliable city and airport rentals"
+}
+
+
+### =====================================================
+### 4. LIST AND FILTER VENDORS
+### =====================================================
+
+###
+GET {{baseUrl}}/vendors/
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+###
+GET {{baseUrl}}/vendors/?type=COMPANY
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+###
+GET {{baseUrl}}/vendors/?is_verified=false
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+### =====================================================
+### 5. UPDATE AND VERIFY VENDOR
+### =====================================================
+
+###
+PUT {{baseUrl}}/vendors/{{vendorA.response.body.id}}/
+Authorization: Bearer {{loginOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "name": "Gamma Prestige Cars Updated",
+  "type": "COMPANY",
+  "description": "Updated luxury fleet description"
+}
+
+
+###
+GET {{baseUrl}}/vendors/{{vendorA.response.body.id}}/
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+### =====================================================
+### 6. ADD VENDOR MEMBER
+### =====================================================
+
+###
+# @name vendorMemberA
+POST {{baseUrl}}/vendor-members/
+Authorization: Bearer {{loginOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vendor": "{{vendorA.response.body.id}}",
+  "user": "{{secondOwnerUser.response.body.id}}",
+  "role": "MANAGER"
+}
+
+
+###
+GET {{baseUrl}}/vendor-members/?vendor={{vendorA.response.body.id}}
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+### =====================================================
+### 7. CREATE VEHICLES
+### =====================================================
+
+###
+# @name car1
+POST {{baseUrl}}/vehicles/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vendor": "{{vendorB.response.body.id}}",
+  "make": "BMW",
+  "model": "X5",
+  "year": 2025,
+  "license_plate": "GAMMA-001",
+  "daily_rate": "150"
+}
+
+
+###
+# @name car2
+POST {{baseUrl}}/vehicles/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vendor": "{{vendorB.response.body.id}}",
+  "make": "Audi",
+  "model": "A6",
+  "year": 2024,
+  "license_plate": "DELTA-002",
+  "daily_rate": "120"
+}
+
+
+### =====================================================
+### 8. LIST VEHICLES WITH SEARCH AND FILTER
+### =====================================================
+
+###
+GET {{baseUrl}}/vehicles/?search=BMW
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+###
+GET {{baseUrl}}/vehicles/?vendor={{vendorB.response.body.id}}
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+###
+GET {{baseUrl}}/vehicles/?status=ACTIVE
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+### =====================================================
+### 9. UPDATE AND VERIFY VEHICLE
+### =====================================================
+
+###
+PATCH {{baseUrl}}/vehicles/{{car1.response.body.id}}/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "daily_rate": "180"
+}
+
+
+###
+GET {{baseUrl}}/vehicles/{{car1.response.body.id}}/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+
+
+### =====================================================
+### 10. CREATE DRIVER
+### =====================================================
+
+###
+# @name driver1
+POST {{baseUrl}}/drivers/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vendor": "{{vendorB.response.body.id}}",
+  "full_name": "Dennis Driver",
+  "license_number": "DRIVER-001",
+  "is_active": true
+}
+
+
+###
+GET {{baseUrl}}/drivers/?vendor={{vendorB.response.body.id}}
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+
+
+### =====================================================
+### 11. CREATE BOOKING
+### =====================================================
+
+###
+# @name booking_request1
+POST {{baseUrl}}/bookings/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vehicle": "{{car1.response.body.id}}",
+  "type": "SELF_DRIVE",
+  "start_at": "2026-09-10T10:00:00Z",
+  "end_at": "2026-09-15T10:00:00Z"
+}
+
+
+### =====================================================
+### 12. BOOKING LIST AND FILTER
+### =====================================================
+
+###
+GET {{baseUrl}}/bookings/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+###
+GET {{baseUrl}}/bookings/?status=PENDING
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+###
+GET {{baseUrl}}/bookings/?vehicle={{car1.response.body.id}}
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 13. OWNER CONFIRMS BOOKING
+### =====================================================
+
+###
+POST {{baseUrl}}/bookings/{{booking_request1.response.body.id}}/approve/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+
+
+### =====================================================
+### 14. ASSIGN DRIVER TO BOOKING
+### =====================================================
+
+###
+POST {{baseUrl}}/bookings/{{booking_request1.response.body.id}}/assign-driver/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "driver_id": "{{driver1.response.body.id}}"
+}
+
+
+### =====================================================
+### 15. COMPLETE BOOKING
+### =====================================================
+
+###
+POST {{baseUrl}}/bookings/{{booking_request1.response.body.id}}/complete/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+
+
+### =====================================================
+### 16. PAYMENT FLOW
+### =====================================================
+
+###
+# @name payment1
+POST {{baseUrl}}/payments/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "booking": "{{booking_request1.response.body.id}}",
+  "amount": "750",
+  "method": "CARD",
+  "reference": "PAY-REF-001"
+}
+
+
+###
+POST {{baseUrl}}/payments/{{payment1.response.body.id}}/mark_paid/
+Authorization: Bearer {{loginAdmin.response.body.access}}
+
+
+###
+POST {{baseUrl}}/payments/{{payment1.response.body.id}}/refund/
+Authorization: Bearer {{loginAdmin.response.body.access}}
+
+
+###
+GET {{baseUrl}}/payments/?booking={{booking_request1.response.body.id}}
+Authorization: Bearer {{loginAdmin.response.body.access}}
+
+
+### =====================================================
+### 17. REVIEW FLOW
+### =====================================================
+
+###
+# @name review1
+POST {{baseUrl}}/reviews/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "booking": "{{booking_request1.response.body.id}}",
+  "rating": 5,
+  "comment": "Amazing ride and excellent service."
+}
+
+
+###
+GET {{baseUrl}}/reviews/?booking={{booking_request1.response.body.id}}
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 18. DELIVERY FLOW
+### =====================================================
+
+###
+# @name delivery1
+POST {{baseUrl}}/deliveries/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "booking": "{{booking_request1.response.body.id}}",
+  "type": "DROPOFF",
+  "status": "PENDING",
+  "address": "123 Airport Road",
+  "fee": "25"
+}
+
+
+###
+GET {{baseUrl}}/deliveries/?booking={{booking_request1.response.body.id}}
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 19. FAVORITES
+### =====================================================
+
+###
+# @name favorite1
+POST {{baseUrl}}/favorites/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vehicle": "{{car2.response.body.id}}"
+}
+
+
+###
+GET {{baseUrl}}/favorites/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+###
+DELETE {{baseUrl}}/favorites/{{favorite1.response.body.id}}/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 20. SECURITY AND PERMISSION TESTS
+### =====================================================
+
+# unauthorized create vendor
+###
+POST {{baseUrl}}/vendors/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "name": "Illegal Vendor",
+  "type": "COMPANY"
+}
+
+
+# owner tries to delete another owner vehicle
+###
+DELETE {{baseUrl}}/vehicles/{{car1.response.body.id}}/
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+# admin lists everything
+###
+GET {{baseUrl}}/vendors/
+Authorization: Bearer {{loginAdmin.response.body.access}}
+
+
+###
+GET {{baseUrl}}/bookings/
+Authorization: Bearer {{loginAdmin.response.body.access}}
+
+
+###
+GET {{baseUrl}}/payments/?status=REFUNDED
+Authorization: Bearer {{loginAdmin.response.body.access}}
+
+
+### =====================================================
+### 21. CLEANUP
+### =====================================================
+
+###
+DELETE {{baseUrl}}/reviews/{{review1.response.body.id}}/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+###
+DELETE {{baseUrl}}/deliveries/{{delivery1.response.body.id}}/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+###
+DELETE {{baseUrl}}/payments/{{payment1.response.body.id}}/
+Authorization: Bearer {{loginAdmin.response.body.access}}
+
+
+###
+DELETE {{baseUrl}}/bookings/{{booking_request1.response.body.id}}/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+###
+DELETE {{baseUrl}}/vehicles/{{car2.response.body.id}}/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+
+
+###
+DELETE {{baseUrl}}/vehicles/{{car1.response.body.id}}/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}
+
+
+###
+DELETE {{baseUrl}}/vendors/{{vendorA.response.body.id}}/
+Authorization: Bearer {{loginOwner.response.body.access}}
+
+
+###
+DELETE {{baseUrl}}/vendors/{{vendorB.response.body.id}}/
+Authorization: Bearer {{loginSecondOwner.response.body.access}}

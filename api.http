@@ -1,0 +1,281 @@
+### =====================================================
+### CONFIG
+### =====================================================
+@baseUrl = http://127.0.0.1:8000/api
+@json = application/json
+
+
+### =====================================================
+### 1. REGISTER CUSTOMER
+### =====================================================
+
+# @name customerUser
+POST {{baseUrl}}/auth/register/
+Content-Type: {{json}}
+
+{
+  "username": "shore_customer_2026",
+  "email": "shore_customer_2026@test.com",
+  "password": "ShoreCust123*",
+  "role": "CUSTOMER"
+}
+
+
+### =====================================================
+### 2. LOGIN CUSTOMER
+### =====================================================
+
+# @name loginCustomer
+POST {{baseUrl}}/auth/login/
+Content-Type: {{json}}
+
+{
+  "email": "shore_customer_2026@test.com",
+  "password": "ShoreCust123*"
+}
+
+
+### =====================================================
+### 3. REGISTER VENDOR STAFF
+### =====================================================
+
+# @name vendorStaff
+POST {{baseUrl}}/auth/register/
+Content-Type: {{json}}
+
+{
+  "username": "shore_vendor_staff_2026",
+  "email": "shore_vendor_staff_2026@test.com",
+  "password": "ShoreVendor123*",
+  "role": "VENDOR_STAFF"
+}
+
+
+### =====================================================
+### 4. LOGIN VENDOR STAFF
+### =====================================================
+
+# @name loginVendorStaff
+POST {{baseUrl}}/auth/login/
+Content-Type: {{json}}
+
+{
+  "email": "shore_vendor_staff_2026@test.com",
+  "password": "ShoreVendor123*"
+}
+
+
+### =====================================================
+### 5. CREATE VENDOR
+### =====================================================
+
+# @name rentalVendor
+POST {{baseUrl}}/vendors/
+Authorization: Bearer {{loginVendorStaff.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "name": "Shoreline Rentals",
+  "type": "COMPANY",
+  "description": "Premium coastal rental fleet"
+}
+
+
+### =====================================================
+### 6. REGISTER VENDOR MEMBER
+### =====================================================
+
+# @name vendorStaffMember
+POST {{baseUrl}}/auth/register/
+Content-Type: {{json}}
+
+{
+  "username": "shore_vendor_member_2026",
+  "email": "shore_vendor_member_2026@test.com",
+  "password": "ShoreMember123*",
+  "role": "VENDOR_STAFF"
+}
+
+
+### =====================================================
+### 7. LOGIN VENDOR MEMBER
+### =====================================================
+
+# @name loginVendorMember
+POST {{baseUrl}}/auth/login/
+Content-Type: {{json}}
+
+{
+  "email": "shore_vendor_member_2026@test.com",
+  "password": "ShoreMember123*"
+}
+
+
+### =====================================================
+### 8. ADD VENDOR MEMBER
+### =====================================================
+
+# @name addVendorMember
+POST {{baseUrl}}/vendor-members/
+Authorization: Bearer {{loginVendorStaff.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vendor": "{{rentalVendor.response.body.id}}",
+  "user": "{{vendorStaffMember.response.body.id}}",
+  "role": "STAFF"
+}
+
+
+### =====================================================
+### 9. CREATE VEHICLE
+### =====================================================
+
+# @name rentalVehicle
+POST {{baseUrl}}/vehicles/
+Authorization: Bearer {{loginVendorStaff.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vendor": "{{rentalVendor.response.body.id}}",
+  "make": "Lexus",
+  "model": "RX 350",
+  "year": 2026,
+  "license_plate": "SHORE-2026-01",
+  "daily_rate": "175"
+}
+
+
+### =====================================================
+### 10. UPLOAD VEHICLE IMAGE AS VENDOR MEMBER
+### =====================================================
+
+# @name vehicleImageUpload
+POST {{baseUrl}}/vehicle-images/
+Authorization: Bearer {{loginVendorMember.response.body.access}}
+
+vehicle: {{rentalVehicle.response.body.id}}
+is_primary: true
+image: @./vehicle-image.jpg
+
+
+### =====================================================
+### 11. CREATE BOOKING REQUEST
+### =====================================================
+
+# @name bookingRequest
+POST {{baseUrl}}/bookings/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "vehicle": "{{rentalVehicle.response.body.id}}",
+  "type": "SELF_DRIVE",
+  "start_at": "2026-11-10T10:00:00Z",
+  "end_at": "2026-11-15T10:00:00Z"
+}
+
+
+### =====================================================
+### 12. VERIFY BOOKING IS PENDING
+### =====================================================
+
+GET {{baseUrl}}/bookings/{{bookingRequest.response.body.id}}/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 13. VENDOR MEMBER CHECKS BOOKING
+### =====================================================
+
+GET {{baseUrl}}/bookings/{{bookingRequest.response.body.id}}/
+Authorization: Bearer {{loginVendorMember.response.body.access}}
+
+
+### =====================================================
+### 14. APPROVE BOOKING
+### =====================================================
+
+POST {{baseUrl}}/bookings/{{bookingRequest.response.body.id}}/approve/
+Authorization: Bearer {{loginVendorStaff.response.body.access}}
+
+
+### =====================================================
+### 15. VERIFY BOOKING APPROVED
+### =====================================================
+
+GET {{baseUrl}}/bookings/{{bookingRequest.response.body.id}}/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 16. COMPLETE BOOKING
+### =====================================================
+
+POST {{baseUrl}}/bookings/{{bookingRequest.response.body.id}}/complete/
+Authorization: Bearer {{loginVendorStaff.response.body.access}}
+
+
+### =====================================================
+### 17. VERIFY BOOKING COMPLETED
+### =====================================================
+
+GET {{baseUrl}}/bookings/{{bookingRequest.response.body.id}}/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 18. CREATE PAYMENT
+### =====================================================
+
+# @name paymentRequest
+POST {{baseUrl}}/payments/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "booking": "{{bookingRequest.response.body.id}}",
+  "amount": "875",
+  "method": "CARD",
+  "reference": "SHORE-2026-001"
+}
+
+
+### =====================================================
+### 19. MARK PAYMENT PAID
+### =====================================================
+
+POST {{baseUrl}}/payments/{{paymentRequest.response.body.id}}/mark_paid/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 20. VERIFY PAYMENT
+### =====================================================
+
+GET {{baseUrl}}/payments/?booking={{bookingRequest.response.body.id}}
+Authorization: Bearer {{loginCustomer.response.body.access}}
+
+
+### =====================================================
+### 21. CREATE REVIEW
+### =====================================================
+
+# @name bookingReview
+POST {{baseUrl}}/reviews/
+Authorization: Bearer {{loginCustomer.response.body.access}}
+Content-Type: {{json}}
+
+{
+  "booking": "{{bookingRequest.response.body.id}}",
+  "rating": 5,
+  "comment": "The backend flow works and vendor member access is validated."
+}
+
+
+### =====================================================
+### 22. VERIFY REVIEW
+### =====================================================
+
+GET {{baseUrl}}/reviews/?booking={{bookingRequest.response.body.id}}
+Authorization: Bearer {{loginCustomer.response.body.access}}

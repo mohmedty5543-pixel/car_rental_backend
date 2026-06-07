@@ -1,0 +1,16 @@
+@startuml
+actor Customer
+participant API
+participant BookingService
+participant AvailabilityService
+database DB
+Customer -> API: POST /api/bookings/
+API -> BookingService: create_request(...)
+BookingService -> AvailabilityService: check_overlap(vehicle, range)
+AvailabilityService -> DB: SELECT overlapping
+DB --> AvailabilityService: rows
+AvailabilityService --> BookingService: ok
+BookingService -> DB: INSERT booking (PENDING)
+BookingService --> API: booking
+API --> Customer: 201
+@enduml

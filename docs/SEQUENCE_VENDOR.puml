@@ -1,0 +1,15 @@
+@startuml
+actor Owner
+participant API
+participant VendorService
+database DB
+Owner -> API: POST /api/vendors/
+API -> VendorService: create(owner, type, ...)
+VendorService -> DB: INSERT vendor
+alt COMPANY
+  Owner -> API: POST /api/vendors/{id}/members/
+  API -> VendorService: add_member(vendor, user, role)
+  VendorService -> DB: INSERT vendor_member
+end
+API --> Owner: 201
+@enduml

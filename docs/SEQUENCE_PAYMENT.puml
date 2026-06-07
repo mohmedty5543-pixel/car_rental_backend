@@ -1,0 +1,13 @@
+@startuml
+actor Customer
+participant API
+participant PaymentService
+database DB
+Customer -> API: POST /api/payments/
+API -> PaymentService: create(booking, amount, method)
+PaymentService -> DB: INSERT payment (PENDING)
+PaymentService -> PaymentService: process()
+PaymentService -> DB: UPDATE payment (PAID)
+PaymentService --> API: payment
+API --> Customer: 201
+@enduml

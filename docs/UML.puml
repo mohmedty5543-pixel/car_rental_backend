@@ -1,0 +1,146 @@
+@startuml CarRental
+hide circle
+skinparam classAttributeIconSize 0
+
+enum UserRole {
+  CUSTOMER
+  VENDOR_OWNER
+  VENDOR_STAFF
+  ADMIN
+}
+enum VendorType { INDIVIDUAL COMPANY }
+enum VendorMemberRole { MANAGER STAFF }
+enum VehicleStatus { DRAFT ACTIVE INACTIVE MAINTENANCE }
+enum BookingStatus {
+  PENDING APPROVED REJECTED CANCELLED ACTIVE COMPLETED
+}
+enum BookingType { SELF_DRIVE WITH_DRIVER }
+enum PaymentStatus { PENDING PAID FAILED REFUNDED }
+enum PaymentMethod { CARD CASH WALLET BANK_TRANSFER }
+enum DeliveryStatus { PENDING IN_TRANSIT DELIVERED RETURNED CANCELLED }
+enum DeliveryType { PICKUP DROPOFF }
+
+class User {
+  +UUID id
+  +string email
+  +string phone
+  +string full_name
+  +UserRole role
+  +bool is_active
+  +datetime created_at
+}
+class Vendor {
+  +UUID id
+  +VendorType type
+  +string name
+  +string description
+  +UUID owner_user_id
+  +bool is_verified
+}
+class VendorMember {
+  +UUID id
+  +UUID vendor_id
+  +UUID user_id
+  +VendorMemberRole role
+}
+class Vehicle {
+  +UUID id
+  +UUID vendor_id
+  +string make
+  +string model
+  +int year
+  +string license_plate
+  +decimal daily_rate
+  +VehicleStatus status
+  +string location
+}
+class VehicleImage {
+  +UUID id
+  +UUID vehicle_id
+  +string image
+  +bool is_primary
+}
+class VehicleAvailability {
+  +UUID id
+  +UUID vehicle_id
+  +date start_date
+  +date end_date
+  +bool is_available
+}
+class Driver {
+  +UUID id
+  +UUID vendor_id
+  +string full_name
+  +string license_number
+  +bool is_active
+}
+class Booking {
+  +UUID id
+  +UUID user_id
+  +UUID vehicle_id
+  +UUID driver_id
+  +BookingType type
+  +BookingStatus status
+  +datetime start_at
+  +datetime end_at
+  +decimal total_amount
+}
+class Payment {
+  +UUID id
+  +UUID booking_id
+  +decimal amount
+  +PaymentMethod method
+  +PaymentStatus status
+  +string reference
+}
+class Delivery {
+  +UUID id
+  +UUID booking_id
+  +DeliveryType type
+  +DeliveryStatus status
+  +string address
+  +decimal fee
+}
+class Review {
+  +UUID id
+  +UUID booking_id
+  +UUID user_id
+  +int rating
+  +string comment
+}
+class FavoriteVehicle {
+  +UUID id
+  +UUID user_id
+  +UUID vehicle_id
+}
+class Notification {
+  +UUID id
+  +UUID user_id
+  +string title
+  +string body
+  +bool is_read
+}
+class AuditLog {
+  +UUID id
+  +UUID actor_id
+  +string action
+  +string entity
+  +UUID entity_id
+  +json metadata
+}
+
+User "1" -- "*" Booking
+User "1" -- "*" Review
+User "1" -- "*" FavoriteVehicle
+User "1" -- "*" Notification
+User "1" -- "*" VendorMember
+Vendor "1" -- "*" Vehicle
+Vendor "1" -- "*" Driver
+Vendor "1" -- "*" VendorMember
+Vehicle "1" -- "*" VehicleImage
+Vehicle "1" -- "*" VehicleAvailability
+Booking "1" -- "*" Payment
+Booking "1" -- "0..1" Delivery
+Booking "1" -- "0..1" Review
+Driver "0..1" -- "*" Booking
+@enduml
