@@ -203,9 +203,8 @@ SPECTACULAR_SETTINGS = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://car-rental-frontend-o8c7-edqutacnv-yacines-projects-c301dbb6.vercel.app/"
+    "https://agent-6a2ae075680ce5336332d289--caryacinee.netlify.app/"
 ]
-
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
     default="http://localhost:5173,http://127.0.0.1:5173",
