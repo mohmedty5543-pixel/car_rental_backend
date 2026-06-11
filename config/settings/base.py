@@ -8,7 +8,7 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # =====================================================
-# CORE SETTINGS
+# CORE
 # =====================================================
 
 SECRET_KEY = config("SECRET_KEY")
@@ -22,11 +22,10 @@ ALLOWED_HOSTS = config(
 )
 
 # =====================================================
-# INSTALLED APPS
+# APPS
 # =====================================================
 
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -34,14 +33,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third Party
+    # Third party
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "django_filters",
     "drf_spectacular",
 
-    # Local Apps
+    # Local apps
     "apps.users",
     "apps.vendors",
     "apps.vehicles",
@@ -59,6 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
+
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
@@ -71,14 +71,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# =====================================================
-# URLS / WSGI / ASGI
-# =====================================================
-
 ROOT_URLCONF = "config.urls"
 
 WSGI_APPLICATION = "config.wsgi.application"
-
 ASGI_APPLICATION = "config.asgi.application"
 
 # =====================================================
@@ -107,33 +102,25 @@ TEMPLATES = [
 AUTH_USER_MODEL = "users.User"
 
 # =====================================================
-# DATABASE
+# DATABASE (IMPORTANT FIX 🚀)
 # =====================================================
-
-import dj_database_url
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="sqlite:///db.sqlite3"
+        default=config("DATABASE_URL", default=""),
+        conn_max_age=600,
     )
 }
+
 # =====================================================
 # PASSWORD VALIDATION
 # =====================================================
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # =====================================================
@@ -141,31 +128,24 @@ AUTH_PASSWORD_VALIDATORS = [
 # =====================================================
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 # =====================================================
-# STATIC FILES
+# STATIC FILES (PRODUCTION READY)
 # =====================================================
 
-STATIC_URL = "static/"
-
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # =====================================================
-# MEDIA FILES
+# MEDIA
 # =====================================================
 
-MEDIA_URL = "media/"
-
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # =====================================================
@@ -175,7 +155,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# DJANGO REST FRAMEWORK
+# DRF
 # =====================================================
 
 REST_FRAMEWORK = {
@@ -202,10 +182,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "SIGNING_KEY": config(
-        "JWT_SIGNING_KEY",
-        default=SECRET_KEY,
-    ),
+    "SIGNING_KEY": config("JWT_SIGNING_KEY", default=SECRET_KEY),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
@@ -221,16 +198,13 @@ SPECTACULAR_SETTINGS = {
 }
 
 # =====================================================
-# CORS
+# CORS (PRODUCTION SAFE FIX)
 # =====================================================
 
-CORS_ALLOW_ALL_ORIGINS = DEBUG
-
-CORS_ALLOWED_ORIGINS = config(
-    "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:5173,http://127.0.0.1:5173",
-    cast=Csv(),
-)
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://car-rental-frontend-o8c7-edqutacnv-yacines-projects-c301dbb6.vercel.app/"
+]
 
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
@@ -238,14 +212,13 @@ CSRF_TRUSTED_ORIGINS = config(
     cast=Csv(),
 )
 
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+
 CORS_ALLOW_HEADERS = [
     "accept",
-    "accept-encoding",
     "authorization",
     "content-type",
-    "dnt",
     "origin",
-    "user-agent",
     "x-csrftoken",
     "x-requested-with",
 ]
@@ -260,14 +233,11 @@ CORS_ALLOW_METHODS = [
 ]
 
 # =====================================================
-# SECURITY (PRODUCTION)
+# SECURITY (PRODUCTION FIX 🔒)
 # =====================================================
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
     SESSION_COOKIE_SECURE = True
-
     CSRF_COOKIE_SECURE = True
-
     SECURE_SSL_REDIRECT = False
